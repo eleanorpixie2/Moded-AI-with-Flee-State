@@ -88,6 +88,7 @@ public class SimpleFSM : FSM
     }
 
 
+    //make the tank go away from the player until it is 600 units away
     protected void UpdateFleeState()
     {
         destPos = playerTransform.position;
@@ -102,6 +103,7 @@ public class SimpleFSM : FSM
         }
     }
 
+    //check to see how much damage the tank has currently taken
     protected int CheckHealth()
     {
         int currentDamage;
@@ -189,6 +191,7 @@ public class SimpleFSM : FSM
 
             curState = FSMState.Attack;
         }
+        //If the tank takes more than 20 damage then flee
         else if(CheckHealth()>=20)
         {
             curState = FSMState.Flee;
