@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 public class SimpleFSM : FSM 
 {
@@ -91,14 +92,16 @@ public class SimpleFSM : FSM
     protected void UpdateFleeState()
     {
         destPos = playerTransform.position;
-        if (Vector3.Distance(transform.position, playerTransform.position) <= 600.0f)
+        if (Vector3.Distance(transform.position, playerTransform.position) <= 800.0f)
         {
             transform.Translate(Vector3.back * Time.deltaTime * curSpeed);
+            curSpeed = 300;
             Debug.Log("Fleeing");
         }
-        else if(Vector3.Distance(transform.position, playerTransform.position) > 600.0f)
+        else if(Vector3.Distance(transform.position, playerTransform.position) > 800.0f)
         {
             curState = FSMState.Patrol;
+            curSpeed = 150;
         }
     }
 
@@ -146,6 +149,7 @@ public class SimpleFSM : FSM
     /// <summary>
     /// Chase state
     /// </summary>
+    int numOfAttacks = 0;
     protected void UpdateChaseState()
     {
         //Set the target position as the player position
@@ -156,7 +160,16 @@ public class SimpleFSM : FSM
         float dist = Vector3.Distance(transform.position, playerTransform.position);
         if (dist <= 200.0f)
         {
-            curState = FSMState.Attack;
+            if (numOfAttacks < 2)
+            {
+                numOfAttacks++;
+                curState = FSMState.Attack;
+            }
+            else
+            {
+                numOfAttacks=0;
+                curState = FSMState.Flee;
+            }
         }
         //Go back to patrol is it become too far
         else if (dist >= 300.0f)
@@ -191,7 +204,12 @@ public class SimpleFSM : FSM
         }
         else if(CheckHealth()>=20)
         {
-            curState = FSMState.Flee;
+            System.Random rnd = new System.Random(Guid.NewGuid().GetHashCode());
+            int toFleeOrNotToFlee = rnd.Next(0, 2);
+            if (toFleeOrNotToFlee == 0)
+                curState = FSMState.Flee;
+            else if(toFleeOrNotToFlee==1)
+                curState = FSMState.Attack;
         }
         //Transition to patrol is the tank become too far
         else if (dist >= 300.0f)
@@ -250,7 +268,7 @@ public class SimpleFSM : FSM
     protected void FindNextPoint()
     {
         print("Finding next point");
-        int rndIndex = Random.Range(0, pointList.Length);
+        int rndIndex = UnityEngine.Random.Range(0, pointList.Length);
         float rndRadius = 10.0f;
         
         Vector3 rndPosition = Vector3.zero;
@@ -260,7 +278,7 @@ public class SimpleFSM : FSM
         //Prevent to decide the random point as the same as before
         if (IsInCurrentRange(destPos))
         {
-            rndPosition = new Vector3(Random.Range(-rndRadius, rndRadius), 0.0f, Random.Range(-rndRadius, rndRadius));
+            rndPosition = new Vector3(UnityEngine.Random.Range(-rndRadius, rndRadius), 0.0f, UnityEngine.Random.Range(-rndRadius, rndRadius));
             destPos = pointList[rndIndex].transform.position + rndPosition;
         }
     }
@@ -282,8 +300,8 @@ public class SimpleFSM : FSM
 
     protected void Explode()
     {
-        float rndX = Random.Range(10.0f, 30.0f);
-        float rndZ = Random.Range(10.0f, 30.0f);
+        float rndX = UnityEngine.Random.Range(10.0f, 30.0f);
+        float rndZ = UnityEngine.Random.Range(10.0f, 30.0f);
         for (int i = 0; i < 3; i++)
         {
             rigidbody.AddExplosionForce(10000.0f, transform.position - new Vector3(rndX, 10.0f, rndZ), 40.0f, 10.0f);
